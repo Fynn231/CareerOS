@@ -1,0 +1,10 @@
+export type Source = {resumeId:string;part:string;paragraph:number;section:string};
+export type Paragraph = {part:string;index:number;section:string;text:string};
+export type Resume = {id:string;basename:string;sha256:string;paragraphs:Paragraph[];sourceText:string;headline:string;summary:string;finderTags:string[]};
+export type Field = {value:string;status:'supported'|'unknown'|'needs-review';candidates:{value:string;sources:Source[]}[]};
+export type Job = {candidate_id:string;title:string;track?:string;employer?:string;[key:string]:unknown};
+export type Bundle = {schemaVersion:1;verifiedAt:string;resumes:Resume[];claims:{id:string;text:string;sources:Source[]}[];fields:Record<string,Field>;jobs:Job[]};
+export type Recommendation = {selectedResumeId:string;label:string;reviewRequired:boolean;warnings:string[];alternatives:{resumeId:string;basename:string;score:number;evidence:{term:string;sources:(Source & {text:string})[]}[];roleFamilies:string[]}[]};
+export const MAX_BUNDLE_BYTES:number;
+export function validateBundle(value:unknown):Bundle;
+export function recommend(bundle:Bundle,job:Job):Recommendation;
