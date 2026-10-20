@@ -138,26 +138,42 @@ function WorkspaceApplicationRow({
   stages: readonly string[];
 }) {
   const [updateState, updateAction, updatePending] = useActionState(updateApplicationAction, emptyState);
+  const [stage, setStage] = useState(application.stage);
+  const [syncedStage, setSyncedStage] = useState(application.stage);
+  if (syncedStage !== application.stage) {
+    setSyncedStage(application.stage);
+    setStage(application.stage);
+  }
   const deleteApplicationActionState = (_prev: WorkspaceFormState, formData: FormData) => deleteApplicationAction(formData);
   const [deleteState, deleteAction, deletePending] = useActionState(deleteApplicationActionState, emptyState);
 
   const [confirming, setConfirming] = useState(false);
   const deleteForm = useRef<HTMLFormElement>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
+  const stageSelect = useRef<HTMLSelectElement>(null);
   const closeConfirmation = () => { setConfirming(false); deleteButton.current?.focus(); };
   return (
     <article className="rounded-md border border-stone-200 p-4">
-      <form action={updateAction} className="grid gap-3">
+      <form
+        action={updateAction}
+        onReset={() => {
+          // Native action-form reset restores defaults after this event; reapply only the stage once it finishes.
+          queueMicrotask(() => {
+            if (stageSelect.current) stageSelect.current.value = stage;
+          });
+        }}
+        className="grid gap-3"
+      >
         <input type="hidden" name="id" value={application.id} />
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Company" name="company" defaultValue={application.company} required />
           <Field label="Role" name="role" defaultValue={application.role} required />
           <label className="grid gap-1 text-sm">
             <span className="font-medium text-slate-700">Stage</span>
-            <select name="stage" defaultValue={application.stage} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
-              {stages.map((stage) => (
-                <option key={stage} value={stage}>
-                  {stage}
+            <select ref={stageSelect} name="stage" value={stage} onChange={(event) => setStage(event.target.value)} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+              {stages.map((stageOption) => (
+                <option key={stageOption} value={stageOption}>
+                  {stageOption}
                 </option>
               ))}
             </select>
